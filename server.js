@@ -21,13 +21,21 @@ function getNextSender() {
   return s;
 }
 
-function makeTransporter(sender) {
+function makeTransporter(sender, attempt = 0) {
+  const configs = [
+    { host: 'smtpout.secureserver.net', port: 587, secure: false },
+    { host: 'relay-hosting.secureserver.net', port: 25,  secure: false },
+    { host: 'smtpout.secureserver.net', port: 465, secure: true  },
+    { host: 'mail.scopethinkers.in',    port: 587, secure: false },
+  ];
+  const cfg = configs[attempt % configs.length];
   return nodemailer.createTransport({
-    host: 'smtpout.secureserver.net',
-    port: 465,
-    secure: true,
+    host: cfg.host, port: cfg.port, secure: cfg.secure,
     auth: { user: sender.email, pass: sender.pass },
-    tls: { rejectUnauthorized: false }
+    tls: { rejectUnauthorized: false },
+    connectionTimeout: 20000,
+    greetingTimeout: 15000,
+    socketTimeout: 20000,
   });
 }
 
